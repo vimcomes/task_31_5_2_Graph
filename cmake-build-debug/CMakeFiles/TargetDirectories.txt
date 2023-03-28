@@ -1,0 +1,3 @@
+C:/Users/vimco/CLionProjects/task_31.5.2_Graph/cmake-build-debug/CMakeFiles/task_31_5_2_Graph.dir
+C:/Users/vimco/CLionProjects/task_31.5.2_Graph/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/vimco/CLionProjects/task_31.5.2_Graph/cmake-build-debug/CMakeFiles/rebuild_cache.dir

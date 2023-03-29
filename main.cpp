@@ -1,16 +1,16 @@
 #include <iostream>
 #include <vector>
 
+//parent
 class IGraph {
 public:
-    IGraph() = default;;
-
-    [[maybe_unused]] explicit IGraph([[maybe_unused]] IGraph *_oth) {};
-    virtual void AddEdge(int from, int to) = 0;
+    IGraph()=default;
+    [[maybe_unused]] explicit IGraph([[maybe_unused]] IGraph*_other) {};
+    virtual void AddEdge (int from, int to) = 0;
     [[nodiscard]] virtual int VerticesCount() const = 0;
     virtual void GetNextVertices(int vertex, std::vector<int> &vertices) const = 0;
-    virtual void GetPrevVertices(int vertex, std::vector<int> &vertices) const = 0;
-    virtual void show () const = 0;
+    virtual void GetPreviewVertices(int vertex, std::vector<int> &vertices) const = 0;
+    virtual void show() const = 0;
     [[nodiscard]] virtual int get (int indI, int indJ) const = 0;
     virtual ~IGraph() = default;
 };
@@ -19,49 +19,54 @@ class ListGraph : public IGraph {
 private:
     std::vector<std::vector<int>> vec;
 public:
-    ListGraph()= default;
+    ListGraph() = default;
     explicit ListGraph(IGraph *ptr) {
         int count = ptr->VerticesCount();
         vec.resize(count);
-        for (int i = 0;i < vec.size();++i) {
-            for (int j = 0;j < vec[i].size();++j) {
-                vec[i].push_back(ptr->get(i, j));
+        for (int i = 0; i < vec.size(); ++i) {
+            for (int j = 0; !vec[i].empty(); ++j){
+                vec[i].push_back(ptr->get(i,j));
             }
         }
     }
+    // here is something strange - count
     ListGraph(IGraph *ptr, int) {
         int count = ptr->VerticesCount();
         vec.resize(count);
-        for (int i = 0;i < vec.size();++i) {
-            for (int j = 0;j < vec.size();++j) {
-                if (ptr->get(i, j) == 1) {
+        for (int i = 0; i < vec.size(); ++i) {
+            for (int j = 0; j < vec.size(); ++j) {
+                if (ptr->get (i,j) == 1) {
                     vec[i].push_back(j);
                 }
             }
         }
     }
+
     explicit ListGraph(int count) {
-        vec.resize(count);
+        vec.resize (count);
     }
-    void AddEdge (int from, int to) override {
+
+    void AddEdge(int from, int to) override {
         vec[from].push_back(to);
     }
+
     [[nodiscard]] int VerticesCount() const override {
         return static_cast<int>(vec.size());
     }
-    void GetNextVertices(int vertex, std::vector<int> &vertices) const override {
+
+    void GetNextVertices( int vertex, std::vector<int> &vertices) const override {
         if (vec[vertex].empty()) {
             std::cout << "There are no adjacent vertices for this vertex" << std::endl;
             return;
         }
-        int buff = vertex;
-        for (int i = 0;;++i) {
-            for (int j : vec[vertex]) {
-                for (int k = 0;;++k) {
+        int buffer = vertex;
+        for (int i = 0;; ++i) {
+            for (int j: vec[vertex]) {
+                for (int k = 0;; ++k) {
                     if (vertices.empty()) {
                         vertices.push_back(j);
                         break;
-                    } else if (j == vertices[k] || j == buff) {
+                    } else if (j == vertices[k] || j == buffer) {
                         break;
                     } else if (k == vertices.size() - 1) {
                         vertices.push_back(j);
@@ -74,27 +79,26 @@ public:
             } else {
                 break;
             }
-
         }
     }
-    void GetPrevVertices(int vertex, std::vector<int> &vertices) const override {
-        for (int i = 0;i < vec.size();++i) { // находим все смежные вершины с vertex и добавляем
-            for (int j = 0;j < vec[i].size();++j) {
+
+    void GetPreviewVertices(int vertex, std::vector<int> &vertices) const override {
+        for (int i = 0; i < vec.size(); ++i) { // finding all adjacent tops with vertex and adding
+            for (int j = 0; j < vec[i].size(); ++j) {
                 if (vec[i][j] == vertex) {
                     vertices.push_back(i);
                     break;
                 }
             }
         }
-
-        for (int i = 0;i < vertices.size();++i) { // находим остальные вершины
-            for (int j = 0;j < vec.size();++j) {
-                if (vertices[i] == j || j == vertex) { // отсекаем повторяющиеся вершины
+        for (int i = 0; i < vertices.size(); ++i) {         // finding rest of tops
+            for (int j = 0; j < vec.size(); ++j) {
+                if (vertices[i] == j || j == vertex) {      // cutting off repeating tops
                     continue;
                 }
-                for (int k = 0;k < vec[j].size();++k) { // находим все смежные вершины с вершинами из vertices
-                    if (vec[j][k] == vertices[i]) { // если вершина j смежная с вершиной vertices[i] идем дальше
-                        for (int l = 0;;++l) { // проверяем есть ли  уже такая вершина в vertices
+                for (int k = 0; k < vec[j].size(); ++k) {   // finding all adjacent tops with tops from vertices
+                    if (vec[j][k] == vertices[i]) {         // if top j is adjacent with top from vertices[i] - go next
+                        for (int l = 0;; ++l) {             // checking if there is the same top in vertices
                             if(vertices[l] == j) {
                                 break;
                             } else if (l == vertices.size() - 1) {
@@ -108,8 +112,9 @@ public:
             }
         }
     }
+
     void show () const override {
-        for (int i = 0; i < vec.size();++i) {
+        for (int i = 0; i < vec.size(); ++i) {
             std::cout << i << ": ";
             for (int j : vec[i]) {
                 std::cout << j << " ";
@@ -117,12 +122,14 @@ public:
             std::cout << std::endl;
         }
     }
+
     [[nodiscard]] int get (int indI, int indJ) const override {
         if (indI >= vec.size() || indJ >= vec[indI].size()) {
             return -1;
         }
         return vec[indI][indJ];
     }
+
 };
 
 class MatrixGraph : public IGraph {
@@ -132,20 +139,21 @@ public:
     MatrixGraph() = default;
     explicit MatrixGraph(IGraph *ptr) {
         vec.resize(ptr->VerticesCount());
-        for (int i = 0;i < vec.size();++i) {
+        for (int i = 0; i < vec.size(); ++i) {
             vec[i].resize(ptr->VerticesCount());
-            for (int j = 0;j < vec[i].size();++j) {
+            for (int j = 0; j < vec[i].size(); ++j) {
                 vec[i].resize(ptr->VerticesCount());
                 vec[i][j] = ptr->get(i, j);
             }
         }
     }
+
     MatrixGraph(IGraph *ptr, int) {
         vec.resize(ptr->VerticesCount());
-        for (int i = 0;i < vec.size();++i) {
+        for (int i = 0; i < vec.size(); ++i) {
             vec[i].resize(ptr->VerticesCount());
-            for (int j = 0;j < vec[i].size();++j) {
-                for (int k = 0;k < vec[i].size();++k) {
+            for (int j = 0; j < vec[i].size(); ++j) {
+                for (int k = 0; k < vec[i].size(); ++k) {
                     if (ptr->get(i, j) == -1) {
                         break;
                     } else if (k == ptr->get(i, j)) {
@@ -158,24 +166,28 @@ public:
             }
         }
     }
+
     explicit MatrixGraph(int count) {
         vec.resize(count);
         for (auto & i : vec) {
             i.resize(count);
         }
     }
+
     void AddEdge (int from, int to) override {
         vec[from][to] = 1;
     }
+
     [[nodiscard]] int VerticesCount() const override {
         return static_cast<int>(vec.size());
     }
+
     void GetNextVertices(int vertex, std::vector<int> &vertices) const override {
         int buff = vertex;
-        for (int i = 0;;++i) {
-            for (int j = 0;j < vec.size();++j) {
+        for (int i = 0;; ++i) {
+            for (int j = 0; j < vec.size(); ++j) {
                 if (vec[vertex][j] == 1) {
-                    for (int k = 0;;++k) {
+                    for (int k = 0;; ++k) {
                         if (vertices.empty()) {
                             vertices.push_back(j);
                             break;
@@ -200,12 +212,13 @@ public:
         }
 
     }
-    void GetPrevVertices(int vertex, std::vector<int> &vertices) const override {
+
+    void GetPreviewVertices(int vertex, std::vector<int> &vertices) const override {
         int buff = vertex;
-        for (int i = 0;;++i) {
-            for (int j = 0;j < vec.size();++j) {
+        for (int i = 0;; ++i) {
+            for (int j = 0; j < vec.size(); ++j) {
                 if (vec[j][vertex] == 1) {
-                    for (int k = 0;;++k) {
+                    for (int k = 0;; ++k) {
                         if (vertices.empty()) {
                             vertices.push_back(j);
                             break;
@@ -231,8 +244,9 @@ public:
             vertex = vertices[i];
         }
     }
+
     void show () const override {
-        for (int i = 0; i < vec.size();++i) {
+        for (int i = 0; i < vec.size(); ++i) {
             std::cout << i << ": ";
             for (int j : vec[i]) {
                 std::cout << j << " ";
@@ -245,12 +259,13 @@ public:
     }
 };
 
-int personInteraction () {
+int personInteraction() {
     int n;
     std::cout << "Enter the number of vertices of the list graph:";
     std::cin >> n;
     return n;
 }
+
 void graphInit (IGraph *graph) {
     while (true) {
         int n,m;
@@ -269,6 +284,7 @@ void graphInit (IGraph *graph) {
         graph->AddEdge(n,m);
     }
 }
+
 void showNextVert (IGraph *graph) {
     while (true) {
         int vertex;
@@ -288,7 +304,8 @@ void showNextVert (IGraph *graph) {
         std::cout << std::endl;
     }
 }
-void showPrevVert (IGraph *graph) {
+
+void showPreviewVert (IGraph *graph) {
     while (true) {
         int vertex;
         std::vector<int> vertices;
@@ -300,7 +317,7 @@ void showPrevVert (IGraph *graph) {
         } else if (vertex == -1) {
             break;
         }
-        graph->GetPrevVertices(vertex, vertices);
+        graph->GetPreviewVertices(vertex, vertices);
         for (int vertice : vertices) {
             std::cout << vertice << " ";
         }
@@ -314,35 +331,35 @@ int main() {
     std::cout << "Adjacency list of the LGraph:" << std::endl;
     LGraph1->show();
     showNextVert(LGraph1);
-    showPrevVert(LGraph1);
+    showPreviewVert(LGraph1);
 
     IGraph *MGraph1 = new MatrixGraph(personInteraction());
     graphInit (MGraph1);
     std::cout << "Adjacency matrix of the MGraph:" << std::endl;
     MGraph1->show();
     showNextVert(MGraph1);
-    showPrevVert(MGraph1);
+    showPreviewVert(MGraph1);
 
     IGraph *LGraph2 = new ListGraph(LGraph1);
     LGraph2->show();
     showNextVert(LGraph2);
-    showPrevVert(LGraph2);
+    showPreviewVert(LGraph2);
     std::cout << std::endl;
     IGraph *MGraph2 = new MatrixGraph(MGraph1);
     MGraph2->show();
     showNextVert(MGraph2);
-    showPrevVert(MGraph2);
+    showPreviewVert(MGraph2);
     std::cout << std::endl;
 
     IGraph *LGraph3 = new ListGraph(MGraph1, 0);
     LGraph3->show();
     showNextVert(LGraph3);
-    showPrevVert(LGraph3);
+    showPreviewVert(LGraph3);
     std::cout << std::endl;
     IGraph *MGraph3 = new MatrixGraph(LGraph1, 0);
     MGraph3->show();
     showNextVert(MGraph3);
-    showPrevVert(MGraph3);
+    showPreviewVert(MGraph3);
     delete MGraph3;
     delete LGraph3;
     delete MGraph2;
